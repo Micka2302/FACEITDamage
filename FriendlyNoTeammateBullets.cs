@@ -1,10 +1,7 @@
 using CounterStrikeSharp.API;                         
 using CounterStrikeSharp.API.Core;                   
 using CounterStrikeSharp.API.Core.Attributes;        
-using CounterStrikeSharp.API.Modules.Commands;       
-using CounterStrikeSharp.API.Modules.Admin;          
-using CounterStrikeSharp.API.Core.Attributes.Registration; 
-using CounterStrikeSharp.API.Modules.Utils;          
+using CounterStrikeSharp.API.Core.Attributes.Registration;
 
 namespace FriendlyNoTeammateBullets;
 
@@ -23,7 +20,6 @@ public class FriendlyNoTeammateBulletsPlugin : BasePlugin
     public override void Load(bool hotReload)
     {
         ApplyFaceitLikeBulletFF();
-        AddCommand("css_ffbullets_apply", "Réapplique le profil no-teammate-bullets", OnApplyCmd);
     }
 
     [GameEventHandler]
@@ -31,12 +27,6 @@ public class FriendlyNoTeammateBulletsPlugin : BasePlugin
     {
         ApplyFaceitLikeBulletFF();
         return HookResult.Continue;
-    }
-
-    private void OnApplyCmd(CCSPlayerController? caller, CommandInfo cmd)
-    {
-        cmd.ReplyToCommand("[FFBullets] Réglages appliqués.");
-        ApplyFaceitLikeBulletFF();
     }
 
     private void ApplyFaceitLikeBulletFF()
