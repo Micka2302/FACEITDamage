@@ -109,6 +109,6 @@ jobs:
             collect/addons/counterstrikesharp/plugins/FACEITDamage/FACEITDamage.dll
             collect/README.md
             collect/addons/counterstrikesharp/configs/plugins/FACEITDamage/FACEITDamage.json
-            collect/advanced_friendlyfire-${{ inputs.tag_name }}.zip
+            collect/FACEITDamage-${{ inputs.tag_name }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
