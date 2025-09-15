@@ -29,10 +29,60 @@ public class FaceitDamagePlugin : BasePlugin
         return HookResult.Continue;
     }
 
+    [GameEventHandler]
+    public HookResult OnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
+    {
+        var attacker = @event.Attacker;
+        var victim = @event.Userid;
+
+        if (attacker is null || victim is null || !attacker.IsValid || !victim.IsValid)
+        {
+            return HookResult.Continue;
+        }
+
+        if (attacker.TeamNum != victim.TeamNum)
+        {
+            return HookResult.Continue;
+        }
+
+        if (IsGrenadeWeapon(@event.Weapon))
+        {
+            return HookResult.Continue;
+        }
+
+        @event.DmgHealth = 0;
+        @event.DmgArmor = 0;
+        return HookResult.Continue;
+    }
+
     private void ApplyFaceitLikeBulletFF()
     {
         Server.ExecuteCommand(CfgFriendlyFire);
         Server.ExecuteCommand(CfgBulletFFMultiplier);
         Server.ExecuteCommand(CfgBulletPenetration);
+    }
+
+    private static bool IsGrenadeWeapon(string? weapon)
+    {
+        if (string.IsNullOrWhiteSpace(weapon))
+        {
+            return false;
+        }
+
+        var normalized = weapon.StartsWith("weapon_", StringComparison.OrdinalIgnoreCase)
+            ? weapon["weapon_".Length..]
+            : weapon;
+
+        return normalized.Equals("hegrenade", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("molotov", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("incgrenade", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("firebomb", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("flashbang", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("smokegrenade", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("decoy", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("tagrenade", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("snowball", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("gasgrenade", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("diversion", StringComparison.OrdinalIgnoreCase);
     }
 }
