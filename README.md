@@ -1,6 +1,6 @@
-![CI](https://github.com/<ton-compte>/FriendlyNoTeammateBullets/actions/workflows/build-release.yml/badge.svg)
+![CI](https://github.com/<ton-compte>/FACEITDamage/actions/workflows/build-release.yml/badge.svg)
 
-# FriendlyNoTeammateBullets
+# FACEITDamage
 
 Un plugin **CounterStrikeSharp (CS2)** qui supprime les dégâts de balles entre coéquipiers, pour un style de configuration proche de **FACEIT**.
 
@@ -16,7 +16,7 @@ Un plugin **CounterStrikeSharp (CS2)** qui supprime les dégâts de balles entre
    ```
 2. Copier la DLL générée dans :
    ```
-   game/csgo/addons/counterstrikesharp/plugins/FriendlyNoTeammateBullets/
+   game/csgo/addons/counterstrikesharp/plugins/FACEITDamage/
    ```
 3. Redémarrer le serveur.
 
