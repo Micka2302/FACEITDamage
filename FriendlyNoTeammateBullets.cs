@@ -1,0 +1,48 @@
+using CounterStrikeSharp.API;                         
+using CounterStrikeSharp.API.Core;                   
+using CounterStrikeSharp.API.Core.Attributes;        
+using CounterStrikeSharp.API.Modules.Commands;       
+using CounterStrikeSharp.API.Modules.Admin;          
+using CounterStrikeSharp.API.Core.Attributes.Registration; 
+using CounterStrikeSharp.API.Modules.Utils;          
+
+namespace FriendlyNoTeammateBullets;
+
+[MinimumApiVersion(80)]
+public class FriendlyNoTeammateBulletsPlugin : BasePlugin
+{
+    public override string ModuleName => "Friendly No-Teammate Bullets";
+    public override string ModuleVersion => "1.0.0";
+    public override string ModuleAuthor => "Absynthium/ChatGPT";
+    public override string ModuleDescription => "Annule les dégâts de balles entre coéquipiers et réapplique les convars à chaque map.";
+
+    private const string CfgFriendlyFire       = "mp_friendlyfire 1";
+    private const string CfgBulletFFMultiplier = "ff_damage_reduction_bullets 0";
+    private const string CfgBulletPenetration  = "ff_damage_bullet_penetration 1";
+
+    public override void Load(bool hotReload)
+    {
+        ApplyFaceitLikeBulletFF();
+        AddCommand("css_ffbullets_apply", "Réapplique le profil no-teammate-bullets", OnApplyCmd);
+    }
+
+    [GameEventHandler]
+    public HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
+    {
+        ApplyFaceitLikeBulletFF();
+        return HookResult.Continue;
+    }
+
+    private void OnApplyCmd(CCSPlayerController? caller, CommandInfo cmd)
+    {
+        cmd.ReplyToCommand("[FFBullets] Réglages appliqués.");
+        ApplyFaceitLikeBulletFF();
+    }
+
+    private void ApplyFaceitLikeBulletFF()
+    {
+        Server.ExecuteCommand(CfgFriendlyFire);
+        Server.ExecuteCommand(CfgBulletFFMultiplier);
+        Server.ExecuteCommand(CfgBulletPenetration);
+    }
+}
