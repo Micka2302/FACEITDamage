@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       release_title:
-        description: "Titre de la release, ex: AdvancedFriendlyFire v1.0.0"
+        description: "Titre de la release, ex: FACEITDamage v1.0.0"
         required: true
         type: string
       include_symbols:

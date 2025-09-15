@@ -3,12 +3,12 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;        
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 
-namespace FriendlyNoTeammateBullets;
+namespace FACEITDamage;
 
 [MinimumApiVersion(80)]
-public class FriendlyNoTeammateBulletsPlugin : BasePlugin
+public class FaceitDamagePlugin : BasePlugin
 {
-    public override string ModuleName => "Friendly No-Teammate Bullets";
+    public override string ModuleName => "FACEITDamage";
     public override string ModuleVersion => "1.0.0";
     public override string ModuleAuthor => "Absynthium/ChatGPT";
     public override string ModuleDescription => "Annule les dégâts de balles entre coéquipiers et réapplique les convars à chaque map.";
