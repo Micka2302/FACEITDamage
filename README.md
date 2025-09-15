@@ -1,3 +1,5 @@
+![CI](https://github.com/<ton-compte>/FriendlyNoTeammateBullets/actions/workflows/build-release.yml/badge.svg)
+
 # FriendlyNoTeammateBullets
 
 Un plugin **CounterStrikeSharp (CS2)** qui supprime les dégâts de balles entre coéquipiers, pour un style de configuration proche de **FACEIT**.
@@ -21,3 +23,17 @@ Un plugin **CounterStrikeSharp (CS2)** qui supprime les dégâts de balles entre
 
 ## Commandes
 - `!ffbullets_apply` — réapplique les réglages côté serveur.
+
+## CI/CD (GitHub Actions)
+
+Ce dépôt inclut un workflow **GitHub Actions** (`.github/workflows/build-release.yml`) qui :
+- compile automatiquement la DLL à chaque push sur `main` (artifact téléchargeable dans l'onglet *Actions*),
+- publie une **Release** avec la DLL attachée quand tu pousses un **tag** commençant par `v` (ex: `v1.0.0`).
+
+### Publier une Release
+```bash
+# Après avoir mergé sur main
+git tag v1.0.0
+git push origin v1.0.0
+```
+Une release sera créée automatiquement avec les DLLs du build.
