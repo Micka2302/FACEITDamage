@@ -1,50 +1,114 @@
-name: build-and-release
+name: Build
 
 on:
-  push:
-    branches: [ main ]
-    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Tag de la release, ex: v1.0.0"
+        required: true
+        type: string
+      release_title:
+        description: "Titre de la release, ex: AdvancedFriendlyFire v1.0.0"
+        required: true
+        type: string
+      include_symbols:
+        description: "Joindre aussi le PDB si disponible"
+        required: false
+        default: false
+        type: boolean
+      include_zip:
+        description: "Joindre un ZIP minimal"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET
+      - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: "8.0.x"
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore "./FACEITDamage.csproj"
 
-      - name: Build (Release)
-        run: dotnet build -c Release --no-restore
+      - name: Build Release to fixed output
+        run: dotnet build "./FACEITDamage.csproj" -c Release -p:OutputPath=out --no-restore
 
-      - name: Upload DLL artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: FriendlyNoTeammateBullets-dll
-          path: |
-            **/bin/Release/**/*.dll
-          if-no-files-found: error
+      - name: Collect only plugin artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT_DIR="out"
+          COLLECT_DIR="collect"
+          mkdir -p "$COLLECT_DIR"
 
-  release:
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: FriendlyNoTeammateBullets-dll
-          path: dist
+          echo "Contenu de $OUT_DIR:"
+          ls -la "$OUT_DIR" || true
 
-      - name: Create GitHub Release and upload DLLs
+          PROJECT_CSProj="FACEITDamage.csproj"
+          PROJECT_NAME="${PROJECT_CSProj%.csproj}"
+          DLL_WANTED="${PROJECT_NAME}.dll"
+
+          if [ ! -f "$OUT_DIR/$DLL_WANTED" ]; then
+            echo "::error::DLL attendue introuvable: $OUT_DIR/$DLL_WANTED"
+            echo "Liste des DLL dans $OUT_DIR:"
+            find "$OUT_DIR" -maxdepth 1 -name "*.dll" -print || true
+            exit 1
+          fi
+
+          cp "$OUT_DIR/$DLL_WANTED" "$COLLECT_DIR/"
+
+          PLUGIN_COLLECT_DIR="$COLLECT_DIR/addons/counterstrikesharp/plugins/$PROJECT_NAME"
+          mkdir -p "$PLUGIN_COLLECT_DIR"
+          cp "$OUT_DIR/$DLL_WANTED" "$PLUGIN_COLLECT_DIR/"
+
+          if [ "${{ inputs.include_symbols }}" = "true" ] && [ -f "$OUT_DIR/${PROJECT_NAME}.pdb" ]; then
+            cp "$OUT_DIR/${PROJECT_NAME}.pdb" "$COLLECT_DIR/"
+          fi
+
+          if [ -f "README.md" ]; then cp README.md "$COLLECT_DIR/"; fi
+          CONFIG_LEGACY_FILE="addons/counterstrikesharp/configs/${PROJECT_NAME}.json"
+          CONFIG_PLUGIN_DIR="addons/counterstrikesharp/configs/plugins/${PROJECT_NAME}"
+          if [ -d "$CONFIG_PLUGIN_DIR" ]; then
+            mkdir -p "$COLLECT_DIR/addons/counterstrikesharp/configs/plugins"
+            cp -r "$CONFIG_PLUGIN_DIR" "$COLLECT_DIR/addons/counterstrikesharp/configs/plugins/"
+          elif [ -f "$CONFIG_LEGACY_FILE" ]; then
+            mkdir -p "$COLLECT_DIR/addons/counterstrikesharp/configs"
+            cp "$CONFIG_LEGACY_FILE" "$COLLECT_DIR/addons/counterstrikesharp/configs/"
+            mkdir -p "$COLLECT_DIR/addons/counterstrikesharp/configs/plugins/$PROJECT_NAME"
+            cp "$CONFIG_LEGACY_FILE" "$COLLECT_DIR/addons/counterstrikesharp/configs/plugins/$PROJECT_NAME/"
+          fi
+
+          echo "Contenu collecté:"
+          ls -la "$COLLECT_DIR"
+
+      - name: Create minimal ZIP
+        if: ${{ inputs.include_zip == true }}
+        run: |
+          cd collect
+          zip -r FACEITDamage-${{ inputs.tag_name }}.zip .
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/**/*.dll
+          tag_name: ${{ inputs.tag_name }}
+          name: ${{ inputs.release_title }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            collect/addons/counterstrikesharp/plugins/FACEITDamage/FACEITDamage.dll
+            collect/README.md
+            collect/addons/counterstrikesharp/configs/plugins/FACEITDamage/FACEITDamage.json
+            collect/advanced_friendlyfire-${{ inputs.tag_name }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
